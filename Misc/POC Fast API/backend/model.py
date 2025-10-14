@@ -10,7 +10,8 @@ def predict_mushroom(input_data: dict):
         # Encode input data using saved label encoders
         encoded = []
         for feature, value in input_data.items():
-            le = label_encoders[feature]
+            feature_key = feature.replace("_", "-")  # 🔧 match encoder keys
+            le = label_encoders[feature_key]
             encoded.append(le.transform([value])[0])  # Transform single value
         encoded = np.array(encoded).reshape(1, -1)
         prediction = model.predict(encoded)[0]
