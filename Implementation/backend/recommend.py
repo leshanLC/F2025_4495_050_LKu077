@@ -59,8 +59,7 @@ def recommend_courses(job_category, user_skills):
             "course_suggestions": ["Job skills file missing 'Category' column"]
         }
 
-    # Filter job category
-    job_req = job_skills[job_skills["category"].str.lower() == job_category.lower()]
+    job_req = job_skills[job_skills["category"].str.lower().str.contains(job_category.lower(), na=False)]
 
     if job_req.empty:
         return {

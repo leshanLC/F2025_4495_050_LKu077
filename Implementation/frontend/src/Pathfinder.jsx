@@ -6,30 +6,64 @@ export default function Pathfinder() {
   const [skills, setSkills] = useState([]);
   const [currentInterest, setCurrentInterest] = useState("");
   const [currentSkill, setCurrentSkill] = useState("");
+  const [education, setEducation] = useState("");
+  const [gpa, setGpa] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Demo mock results
-    const mockResults = {
-      careers: [
-        "Data Analyst",
-        "Software Engineer",
-        "UX Designer",
-        "Digital Marketer",
-        "Project Manager",
-      ],
-      courses: [
-        "Data Visualization, SQL for Analytics",
-        "Advanced JavaScript, System Design",
-        "UI/UX Tools, Human-Computer Interaction",
-        "SEO, Google Ads Certification",
-        "Agile Management, Leadership Skills",
-      ],
-      tips: "You show strong analytical and collaborative traits. Try engaging in data-driven team projects and leadership workshops to boost your professional edge.",
+
+    // Prevent empty inputs
+    if (!education || !gpa || interests.length === 0 || skills.length === 0) {
+      setError("Please fill out all required fields before submitting.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const payload = {
+      education: education,
+      gpa: parseFloat(gpa),
+      interests: interests,
+      skills: skills,
     };
-    setResults(mockResults);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Format backend response for display
+      const formattedResults = {
+        careers: data.predictions.map((p) => p.job_category),
+        courses: data.predictions.map((p) =>
+          p.recommended_courses.join(", ")
+        ),
+        tips: "Results are generated based on your inputs and the backend model predictions.",
+      };
+
+      setResults(formattedResults);
+    } catch (err) {
+      console.error("Error fetching predictions:", err);
+      setError("Failed to fetch recommendations. Please check your backend server.");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Add & remove interests
   const addInterest = (e) => {
     e.preventDefault();
     if (currentInterest.trim() && !interests.includes(currentInterest.trim())) {
@@ -37,11 +71,9 @@ export default function Pathfinder() {
       setCurrentInterest("");
     }
   };
+  const removeInterest = (i) => setInterests(interests.filter((x) => x !== i));
 
-  const removeInterest = (interestToRemove) => {
-    setInterests(interests.filter(interest => interest !== interestToRemove));
-  };
-
+  // Add & remove skills
   const addSkill = (e) => {
     e.preventDefault();
     if (currentSkill.trim() && !skills.includes(currentSkill.trim())) {
@@ -49,14 +81,10 @@ export default function Pathfinder() {
       setCurrentSkill("");
     }
   };
-
-  const removeSkill = (skillToRemove) => {
-    setSkills(skills.filter(skill => skill !== skillToRemove));
-  };
+  const removeSkill = (s) => setSkills(skills.filter((x) => x !== s));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* Header Section */}
       <header className="bg-gradient-to-r from-blue-600 to-indigo-700 py-12 shadow-lg">
         <div className="container mx-auto px-6 text-center">
           <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
@@ -68,16 +96,13 @@ export default function Pathfinder() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-6 py-12">
         <div className="max-w-6xl mx-auto">
-          {/* Form Section */}
           <form
             onSubmit={handleSubmit}
             className="bg-white rounded-2xl shadow-xl border border-blue-100 overflow-hidden mb-12"
           >
             <div className="p-8 md:p-12">
-              {/* Student Information */}
               <section className="mb-12">
                 <div className="flex items-center mb-8">
                   <div className="w-2 h-8 bg-blue-600 rounded-full mr-4"></div>
@@ -85,23 +110,31 @@ export default function Pathfinder() {
                     Student Information
                   </h2>
                 </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Education */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">
                       Degree or Diploma
                     </label>
                     <input
                       type="text"
+                      value={education}
+                      onChange={(e) => setEducation(e.target.value)}
                       placeholder="e.g., Computer Science"
                       className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
+
+                  {/* GPA */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">
                       GPA
                     </label>
                     <input
                       type="number"
+                      value={gpa}
+                      onChange={(e) => setGpa(e.target.value)}
                       placeholder="e.g., 3.8"
                       step="0.1"
                       min="0"
@@ -109,8 +142,8 @@ export default function Pathfinder() {
                       className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
-                  
-                  {/* Interests List */}
+
+                  {/* Interests */}
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-sm font-medium text-gray-700">
                       Interests
@@ -120,7 +153,7 @@ export default function Pathfinder() {
                         type="text"
                         value={currentInterest}
                         onChange={(e) => setCurrentInterest(e.target.value)}
-                        placeholder="e.g., data analysis, cybersecurity, digital marketing"
+                        placeholder="e.g., data analysis, cybersecurity, marketing"
                         className="flex-1 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       />
                       <button
@@ -130,30 +163,29 @@ export default function Pathfinder() {
                         Add
                       </button>
                     </div>
+
                     {interests.length > 0 && (
-                      <div className="mt-3">
-                        <div className="flex flex-wrap gap-2">
-                          {interests.map((interest, index) => (
-                            <div
-                              key={index}
-                              className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg flex items-center gap-2"
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {interests.map((i, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg flex items-center gap-2"
+                          >
+                            <span>{i}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeInterest(i)}
+                              className="text-blue-500 hover:text-blue-700 text-lg font-bold"
                             >
-                              <span>{interest}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeInterest(interest)}
-                                className="text-blue-500 hover:text-blue-700 text-lg font-bold"
-                              >
-                                ×
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                              ×
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
 
-                  {/* Skills List */}
+                  {/* Skills */}
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-sm font-medium text-gray-700">
                       Skills
@@ -163,8 +195,8 @@ export default function Pathfinder() {
                         type="text"
                         value={currentSkill}
                         onChange={(e) => setCurrentSkill(e.target.value)}
-                        placeholder="e.g., Python, Excel, SQL, JavaScript, Project Management"
-                        className="flex-1 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="e.g., Python, JavaScript, SQL"
+                        className="flex-1 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                       />
                       <button
                         onClick={addSkill}
@@ -173,193 +205,79 @@ export default function Pathfinder() {
                         Add
                       </button>
                     </div>
+
                     {skills.length > 0 && (
-                      <div className="mt-3">
-                        <div className="flex flex-wrap gap-2">
-                          {skills.map((skill, index) => (
-                            <div
-                              key={index}
-                              className="bg-green-100 text-green-700 px-3 py-2 rounded-lg flex items-center gap-2"
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {skills.map((s, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-green-100 text-green-700 px-3 py-2 rounded-lg flex items-center gap-2"
+                          >
+                            <span>{s}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeSkill(s)}
+                              className="text-green-500 hover:text-green-700 text-lg font-bold"
                             >
-                              <span>{skill}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeSkill(skill)}
-                                className="text-green-500 hover:text-green-700 text-lg font-bold"
-                              >
-                                ×
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                              ×
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
                 </div>
               </section>
 
-              {/* Personality Traits */}
-              <section className="mb-12">
-                <div className="flex items-center mb-8">
-                  <div className="w-2 h-8 bg-indigo-600 rounded-full mr-4"></div>
-                  <h2 className="text-3xl font-bold text-gray-800">
-                    Personality & Work Preferences
-                  </h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Preferred Work Style
-                    </label>
-                    <select className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option>Select Work Style</option>
-                      <option>Independently</option>
-                      <option>In a team</option>
-                      <option>Mix of both</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Problem Solving Style
-                    </label>
-                    <select className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option>Select Problem Solving Style</option>
-                      <option>Logical and structured</option>
-                      <option>Creative and intuitive</option>
-                      <option>Collaborative</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Leadership Preference
-                    </label>
-                    <select className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option>Select Leadership Preference</option>
-                      <option>Enjoy leading</option>
-                      <option>Sometimes lead</option>
-                      <option>Prefer supporting roles</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Risk Tolerance
-                    </label>
-                    <select className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option>Select Risk Tolerance</option>
-                      <option>Low</option>
-                      <option>Moderate</option>
-                      <option>High</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Detail Orientation
-                    </label>
-                    <select className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option>Select Detail Orientation</option>
-                      <option>Detail-focused</option>
-                      <option>Big-picture thinker</option>
-                      <option>Balanced</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Motivation Type
-                    </label>
-                    <select className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option>Select Motivation Type</option>
-                      <option>Achievement-driven</option>
-                      <option>Learning-focused</option>
-                      <option>Impact-oriented</option>
-                    </select>
-                  </div>
-                </div>
-              </section>
-
-              {/* Submit Button */}
+              {/* Submit */}
               <div className="flex justify-center pt-6">
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-12 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  disabled={loading}
+                  className={`${
+                    loading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  } text-white px-12 py-4 rounded-xl font-semibold text-lg transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl`}
                 >
-                  Get Recommendations
+                  {loading ? "Loading..." : "Get Recommendations"}
                 </button>
               </div>
+
+              {error && (
+                <p className="text-center text-red-600 mt-4 font-medium">{error}</p>
+              )}
             </div>
           </form>
 
-          {/* Results Section */}
+          {/* Display Results */}
           {results && (
             <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl border border-blue-200 overflow-hidden">
               <div className="p-8 md:p-12">
-                <div className="flex items-center mb-8">
-                  <div className="w-2 h-8 bg-green-500 rounded-full mr-4"></div>
-                  <h2 className="text-3xl font-bold text-gray-800">
-                    Your Career Recommendations
-                  </h2>
-                </div>
-                
-                {/* Career List */}
-                <div className="mb-10">
-                  <h3 className="text-xl font-semibold text-gray-700 mb-6">
-                    Recommended Career Paths
-                  </h3>
-                  <div className="space-y-4">
-                    {results.careers.map((career, index) => (
-                      <div
-                        key={index}
-                        className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow duration-200"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h4 className="text-lg font-bold text-blue-700 mb-2">
-                              {career}
-                            </h4>
-                            <p className="text-gray-600">
-                              <span className="font-medium">Recommended Courses:</span>{" "}
-                              {results.courses[index]}
-                            </p>
-                          </div>
-                          <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-                            {index + 1}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <h2 className="text-3xl font-bold text-gray-800 mb-8">
+                  Your Career Recommendations
+                </h2>
 
-                {/* Tips Section */}
-                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-10">
-                  <div className="flex items-center mb-3">
-                    <div className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-white text-sm">💡</span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Personalized Advice
-                    </h3>
+                {results.careers.map((career, index) => (
+                  <div
+                    key={index}
+                    className="bg-white border border-gray-200 rounded-xl p-6 mb-4 hover:shadow-md transition-shadow duration-200"
+                  >
+                    <h4 className="text-lg font-bold text-blue-700 mb-2">
+                      {career}
+                    </h4>
+                    <p className="text-gray-600">
+                      <span className="font-medium">Recommended Courses:</span>{" "}
+                      {results.courses[index]}
+                    </p>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">
-                    {results.tips}
-                  </p>
-                </div>
+                ))}
 
-                {/* Job Market Trend */}
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-700 mb-6">
-                    Job Market Trends
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mt-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    Personalized Advice
                   </h3>
-                  <div className="bg-white border border-gray-200 rounded-xl p-8">
-                    <div className="h-64 flex items-center justify-center text-gray-400">
-                      <div className="text-center">
-                        <div className="text-4xl mb-4">📊</div>
-                        <p className="text-lg font-medium">Market Trends Visualization</p>
-                        <p className="text-sm text-gray-500 mt-2">
-                          Interactive chart showing demand for your recommended careers
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <p className="text-gray-700">{results.tips}</p>
                 </div>
               </div>
             </div>

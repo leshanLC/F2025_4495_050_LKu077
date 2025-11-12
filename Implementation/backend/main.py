@@ -2,14 +2,23 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
-from app.preprocess import preprocess_input
-from app.recommend import recommend_courses
+from preprocess import preprocess_input
+from recommend import recommend_courses
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Career Path Prediction API")
 
-model = joblib.load("app/saved_model.pkl")
-tfidf = joblib.load("app/tfidf.pkl")
-label_encoder = joblib.load("app/label_encoder.pkl")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or ["http://localhost:5173"] for security
+    allow_credentials=True,
+    allow_methods=["*"],  # <== allows OPTIONS, GET, POST, etc.
+    allow_headers=["*"],
+)
+
+model = joblib.load("saved_model.pkl")
+tfidf = joblib.load("tfidf.pkl")
+label_encoder = joblib.load("label_encoder.pkl")
 
 class UserProfile(BaseModel):
     education: str
