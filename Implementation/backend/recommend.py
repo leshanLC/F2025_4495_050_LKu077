@@ -39,7 +39,7 @@ def find_relevant_courses(missing_skills):
 
     course_suggestions = []
     for skill in missing_skills[:5]:
-        matched = courses[courses["skills"].str.contains(skill, case=False, na=False)]
+        matched = courses[courses["skills"].str.contains(re.escape(skill), case=False, na=False)]
         if not matched.empty:
             for _, row in matched.head(1).iterrows():
                 course_suggestions.append(

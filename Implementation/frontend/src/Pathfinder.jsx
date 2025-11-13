@@ -268,7 +268,7 @@ export default function Pathfinder() {
                     </h4>
                     <p className="text-gray-600">
                       <span className="font-medium">Recommended Courses:</span>{" "}
-                      {results.courses[index]}
+                      {}
                     </p>
                   </div>
                 ))}
