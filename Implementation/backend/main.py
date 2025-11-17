@@ -1,27 +1,18 @@
 # app/main.py
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
-from typing import Dict
 from preprocess import preprocess_input
 from recommend import recommend_courses
 from fastapi.middleware.cors import CORSMiddleware
-
-from personality_model import (
-    predict_cluster_from_ocean,
-    compute_ocean_from_items,
-    cluster_names,
-    cluster_desc_en,
-)
 
 app = FastAPI(title="Career Path Prediction API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or ["http://localhost:5173"] for security
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],  # <== allows OPTIONS, GET, POST, etc.
+    allow_methods=["*"],  
     allow_headers=["*"],
 )
 
@@ -35,6 +26,9 @@ class UserProfile(BaseModel):
     interests: list[str]
     skills: list[str]
 
+<<<<<<< Updated upstream
+=======
+# pydantic schemas(personality)
 class OceanInput(BaseModel):
     """
     Request body schema for when the frontend already sends
@@ -73,14 +67,14 @@ class PredictResponse(BaseModel):
     cluster_id: int
     cluster_name: str
     description_en: str
-    probabilities: Dict[str, float]   # Example: {"0": 0.12, "1": 0.08, ...}
+    probabilities: Dict[str, float]  
 
 
 # API endpoints
 
 
-@app.post("/predict", response_model=PredictResponse)
-def predict(input_data: OceanInput):
+@app.post("/personality", response_model=PredictResponse)
+def personality(input_data: OceanInput):
     """
     Endpoint 1: Predict from OCEAN scores.
 
@@ -120,6 +114,7 @@ def predict(input_data: OceanInput):
         probabilities=prob_dict,
     )
 
+>>>>>>> Stashed changes
 @app.post("/predict")
 def predict_jobs(profile: UserProfile):
     X_vec = preprocess_input(profile.education, profile.gpa, profile.interests, profile.skills)

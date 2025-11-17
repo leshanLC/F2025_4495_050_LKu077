@@ -10,6 +10,46 @@ export default function Pathfinder() {
   const [gpa, setGpa] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [personality, setPersonality] = useState(Array(25).fill(0));
+
+
+  const personalityQuestions = [
+  // Extraversion
+  "I am the life of the party.",
+  "I feel comfortable around people.",
+  "I start conversations.",
+  "I talk to a lot of different people at parties.",
+  "I am quiet around strangers.",
+
+  // Neuroticism
+  "I get stressed out easily.",
+  "I am relaxed most of the time.",
+  "I worry about things.",
+  "I get upset easily.",
+  "I often feel blue.",
+
+  // Agreeableness
+  "I am interested in people.",
+  "I sympathize with others’ feelings.",
+  "I have a soft heart.",
+  "I take time out for others.",
+  "I feel little concern for others.",
+
+  // Conscientiousness
+  "I am always prepared.",
+  "I pay attention to details.",
+  "I get chores done right away.",
+  "I like order.",
+  "I shirk my duties.",
+
+  // Openness
+  "I have a rich vocabulary.",
+  "I have a vivid imagination.",
+  "I have excellent ideas.",
+  "I am quick to understand things.",
+  "I am full of ideas."
+];
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -227,6 +267,50 @@ export default function Pathfinder() {
                     )}
                   </div>
                 </div>
+                {/* Personality Questions */}
+                <div className="space-y-6 md:col-span-2 mt-10">
+                  <div className="flex items-center mb-6">
+                    <div className="w-2 h-8 bg-blue-600 rounded-full mr-4"></div>
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      Personality Assessment
+                    </h2>
+                  </div>
+
+                  <p className="text-gray-600 mb-4">
+                    Rate each statement from <strong>0 (Strongly Disagree)</strong> to{" "}
+                    <strong>5 (Strongly Agree)</strong>.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {personalityQuestions.map((question, index) => (
+                      <div
+                        key={index}
+                        className="bg-gray-50 border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-md transition-all"
+                      >
+                        <label className="block text-gray-800 font-medium mb-2">
+                          {index + 1}. {question}
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="5"
+                          step="0.1"
+                          value={personality[index]}
+                          onChange={(e) => {
+                            const updated = [...personality];
+                            updated[index] = parseFloat(e.target.value);
+                            setPersonality(updated);
+                          }}
+                          className="w-full accent-blue-600"
+                        />
+                        <div className="text-right text-sm text-gray-600">
+                          {personality[index]}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </section>
 
               {/* Submit */}
