@@ -83,7 +83,7 @@ def validate_ocean(o: float, c: float, e: float, a: float, n: float) -> None:
     vals = [o, c, e, a, n]
     for v in vals:
         fv = float(v)
-        if not (1.0 <= fv <= 5.0):
+        if not (0.0 <= fv <= 5.0):
             raise ValueError("All O,C,E,A,N scores must be in [1,5].")
 
 
@@ -139,10 +139,10 @@ def compute_ocean_from_items(answers: Dict[str, float]):
     if missing:
         raise ValueError(f"Missing item(s): {missing[:3]} ... total {len(missing)}")
 
-    # (2) Validate that each item is within the [1,5] range
+    # (2) Validate that each item is within the [0,5] range
     for key in required_cols:
         v = float(answers[key])
-        if not (1.0 <= v <= 5.0):
+        if not (0.0 <= v <= 5.0):
             raise ValueError(f"Item {key} must be in [1,5], got {v}")
 
     # Helper to compute mean for each trait
