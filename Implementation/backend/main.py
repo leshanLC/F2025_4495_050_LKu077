@@ -1,10 +1,14 @@
 # app/main.py
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Dict
 import joblib
 from preprocess import preprocess_input
+from personality_model import cluster_names
 from recommend import recommend_courses
 from fastapi.middleware.cors import CORSMiddleware
+from personality_model import predict_cluster_from_ocean, cluster_desc_en
+
 
 app = FastAPI(title="Career Path Prediction API")
 
@@ -26,8 +30,6 @@ class UserProfile(BaseModel):
     interests: list[str]
     skills: list[str]
 
-<<<<<<< Updated upstream
-=======
 # pydantic schemas(personality)
 class OceanInput(BaseModel):
     """
@@ -114,7 +116,6 @@ def personality(input_data: OceanInput):
         probabilities=prob_dict,
     )
 
->>>>>>> Stashed changes
 @app.post("/predict")
 def predict_jobs(profile: UserProfile):
     X_vec = preprocess_input(profile.education, profile.gpa, profile.interests, profile.skills)

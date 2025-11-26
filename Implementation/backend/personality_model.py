@@ -18,21 +18,57 @@ except Exception as e:
 # Cluster labels and descriptions
 
 # Mapping from cluster ID to human-readable name and English description.
+
 cluster_names = {
-    0: "The Social Explorer",
-    1: "The Organizer",
-    2: "The Calm Analyst",
-    3: "The Empathetic Mediator",
-    4: "The Creative Thinker",
+    0: "Balanced Collaborator",
+    1: "Reserved Analyzer",
+    2: "Calm Problem-Solver",
+    3: "Supportive Team Member",
+    4: "Creative Explorer",
 }
 
+    
+
+
 cluster_desc_en = {
-    0: "a sociable, upbeat team player",
-    1: "a responsible, systematic planner",
-    2: "an analytical, calm thinker",
-    3: "an empathetic, cooperative coordinator",
-    4: "a creative, curious explorer",
+    0: (
+        "This type is a steady, balanced collaborator who stays calm under pressure and works reliably in team settings. "
+        "They are emotionally stable, cooperative, and consistent, which makes group work feel predictable and smooth. "
+        "Strengths: reliability, emotional stability, organization, and consideration for others. "
+        "Growth areas: may hesitate to take bold risks or move away from familiar routines. "
+        "Career fit: project coordination, HR support, operations, customer service, and administrative roles."
+    ),
+    1: (
+        "This type is a reserved, detail-focused analyzer who prefers quiet, independent work and thinks carefully before acting. "
+        "They are introspective and sensitive, which helps them notice risks or issues others might miss. "
+        "Strengths: thoughtfulness, analytical thinking, caution, and ability to work independently. "
+        "Growth areas: may overthink decisions, feel easily stressed, or find fast-paced, highly social environments overwhelming. "
+        "Career fit: research, data entry, writing, quality control, and back-office roles."
+    ),
+    2: (
+        "This type is a practical, calm problem-solver who combines creative thinking with emotional stability. "
+        "They prefer structured problem-solving over highly social or chaotic environments and stay composed under pressure. "
+        "Strengths: steady decision-making, creative but grounded thinking, patience, and logical reasoning. "
+        "Growth areas: may communicate too little, be less assertive in groups, or keep ideas to themselves. "
+        "Career fit: UX research, engineering support, IT troubleshooting, product analysis, and design support roles."
+    ),
+    3: (
+        "This type is a warm, socially supportive team member who values harmony and positive relationships. "
+        "They are friendly, cooperative, and emotionally stable, helping to maintain a calm and supportive team atmosphere. "
+        "Strengths: empathy, teamwork, patience, and reliability in group settings. "
+        "Growth areas: may avoid conflict, hesitate to speak up strongly, or hold back their own opinions to keep peace. "
+        "Career fit: customer service, community engagement, teaching assistant roles, and team coordination."
+    ),
+    4: (
+        "This type is a creative, emotionally intuitive explorer who enjoys flexible, dynamic environments and new ideas. "
+        "They are imaginative and expressive, with strong emotional awareness that supports empathy and creativity. "
+        "Strengths: originality, idea generation, expressiveness, and understanding of others' feelings. "
+        "Growth areas: may feel overwhelmed under stress, struggle with consistency, or need clearer structure and routines. "
+        "Career fit: marketing, design, content creation, creative strategy, and arts-related roles."
+    ),
 }
+
+
 
 
 
