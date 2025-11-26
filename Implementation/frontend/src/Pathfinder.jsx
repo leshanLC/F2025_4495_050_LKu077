@@ -11,6 +11,7 @@ export default function Pathfinder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [personality, setPersonality] = useState(Array(25).fill(0));
+  const [personalityResult, setPersonalityResult] = useState(null);
 
 
   const personalityQuestions = [
@@ -51,10 +52,51 @@ export default function Pathfinder() {
 ];
 
 
+  // Compute O, C, E, A, N scores from 25 personality items (0–5 scale)
+  const computeOceanFromAnswers = (answers) => {
+    const get = (i) => Number(answers[i]);
+    const reverse = (v) => 5 - Number(v); // reverse-scored items on 0–5 scale
+
+    const mean = (arr) =>
+      arr.reduce((sum, v) => sum + Number(v), 0) / (arr.length || 1);
+
+    // Extraversion: Q1–Q5 (index 0–4), Q5 is reverse-scored
+    const eItems = [get(0), get(1), get(2), get(3), reverse(get(4))];
+
+    // Neuroticism: Q6–Q10 (index 5–9), Q7 is reverse-scored
+    const nItems = [get(5), reverse(get(6)), get(7), get(8), get(9)];
+
+    // Agreeableness: Q11–Q15 (index 10–14), Q15 is reverse-scored
+    const aItems = [get(10), get(11), get(12), get(13), reverse(get(14))];
+
+    // Conscientiousness: Q16–Q20 (index 15–19), Q20 is reverse-scored
+    const cItems = [get(15), get(16), get(17), get(18), reverse(get(19))];
+
+    // Openness: Q21–Q25 (index 20–24), all normal
+    const oItems = [get(20), get(21), get(22), get(23), get(24)];
+
+    const rawO = mean(oItems);
+    const rawC = mean(cItems);
+    const rawE = mean(eItems);
+    const rawA = mean(aItems);
+    const rawN = mean(nItems);
+
+    // Map 0–5 scale to 1–5 scale expected by backend
+    const toOneToFive = (v) => 1 + (v / 5) * 4;
+
+    return {
+      O: toOneToFive(rawO),
+      C: toOneToFive(rawC),
+      E: toOneToFive(rawE),
+      A: toOneToFive(rawA),
+      N: toOneToFive(rawN),
+    };
+  };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prevent empty inputs
     if (!education || !gpa || interests.length === 0 || skills.length === 0) {
       setError("Please fill out all required fields before submitting.");
       return;
@@ -63,45 +105,74 @@ export default function Pathfinder() {
     setLoading(true);
     setError(null);
 
-    const payload = {
+    // ---- 1) Career prediction payload ----
+    const profilePayload = {
       education: education,
       gpa: parseFloat(gpa),
       interests: interests,
       skills: skills,
     };
 
-    try {
-      const response = await fetch("http://127.0.0.1:8000/predict", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+    // ---- 2) Personality(OCEAN) calculation ----
+    const oceanPayload = computeOceanFromAnswers(personality);
+    // oceanPayload = { O: ..., C: ..., E: ..., A: ..., N: ... }
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+    try {
+      // call APIs(Promise.all)
+      const [personalityRes, careerRes] = await Promise.all([
+        fetch("http://127.0.0.1:8000/personality", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(oceanPayload),
+        }),
+        fetch("http://127.0.0.1:8000/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(profilePayload),
+        }),
+      ]);
+
+      if (!personalityRes.ok) {
+        throw new Error(
+          `Personality HTTP error! Status: ${personalityRes.status}`
+        );
+      }
+      if (!careerRes.ok) {
+        throw new Error(`Career HTTP error! Status: ${careerRes.status}`);
       }
 
-      const data = await response.json();
+      const personalityData = await personalityRes.json();
+      const careerData = await careerRes.json();
 
-      // Format backend response for display
+      // saving personality result
+      setPersonalityResult(personalityData);
+
+      // career result format
       const formattedResults = {
-        careers: data.predictions.map((p) => p.job_category),
-        courses: data.predictions.map((p) =>
+        careers: careerData.predictions.map((p) => p.job_category),
+        courses: careerData.predictions.map((p) =>
           p.recommended_courses.join(", ")
         ),
-        tips: "Results are generated based on your inputs and the backend model predictions.",
+        tips:
+          "Results are generated based on your inputs and the backend model predictions.",
       };
 
       setResults(formattedResults);
     } catch (err) {
       console.error("Error fetching predictions:", err);
-      setError("Failed to fetch recommendations. Please check your backend server.");
+      setError(
+        "Failed to fetch recommendations. Please check your backend server."
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  
 
   // Add & remove interests
   const addInterest = (e) => {
@@ -277,7 +348,7 @@ export default function Pathfinder() {
                   </div>
 
                   <p className="text-gray-600 mb-4">
-                    Rate each statement from <strong>0 (Strongly Disagree)</strong> to{" "}
+                    Rate each statement from <strong>1 (Strongly Disagree)</strong> to{" "}
                     <strong>5 (Strongly Agree)</strong>.
                   </p>
 
@@ -294,11 +365,11 @@ export default function Pathfinder() {
                           type="range"
                           min="0"
                           max="5"
-                          step="0.1"
+                          step="1"
                           value={personality[index]}
                           onChange={(e) => {
                             const updated = [...personality];
-                            updated[index] = parseFloat(e.target.value);
+                            updated[index] = parseInt(e.target.value);// change to integer
                             setPersonality(updated);
                           }}
                           className="w-full accent-blue-600"
@@ -334,6 +405,23 @@ export default function Pathfinder() {
             </div>
           </form>
 
+      {/* Personality Result */}
+          {personalityResult && (
+            <div className="bg-white rounded-2xl shadow-xl border border-purple-200 overflow-hidden mb-10">
+              <div className="p-8 md:p-12">
+                <h2 className="text-3xl font-bold text-gray-800 mb-3">
+                  Your Personality Profile
+                </h2>
+                <p className="text-xl font-semibold text-purple-700 mb-3">
+                  {personalityResult.cluster_name}
+                </p>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                  {personalityResult.description_en}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Display Results */}
           {results && (
             <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl border border-blue-200 overflow-hidden">
@@ -352,7 +440,7 @@ export default function Pathfinder() {
                     </h4>
                     <p className="text-gray-600">
                       <span className="font-medium">Recommended Courses:</span>{" "}
-                      {}
+                      {results.courses[index]}
                     </p>
                   </div>
                 ))}
