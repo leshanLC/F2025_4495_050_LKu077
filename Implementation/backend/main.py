@@ -127,11 +127,11 @@ class OceanInput(BaseModel):
     Request body schema for when the frontend already sends
     O, C, E, A, N average scores.
     """
-    O: float = Field(..., ge=1.0, le=5.0, description="Openness (1–5)")
-    C: float = Field(..., ge=1.0, le=5.0, description="Conscientiousness (1–5)")
-    E: float = Field(..., ge=1.0, le=5.0, description="Extraversion (1–5)")
-    A: float = Field(..., ge=1.0, le=5.0, description="Agreeableness (1–5)")
-    N: float = Field(..., ge=1.0, le=5.0, description="Neuroticism (1–5)")
+    O: float = Field(..., ge=0.0, le=5.0, description="Openness (0–5)")
+    C: float = Field(..., ge=0.0, le=5.0, description="Conscientiousness (0–5)")
+    E: float = Field(..., ge=0.0, le=5.0, description="Extraversion (0–5)")
+    A: float = Field(..., ge=0.0, le=5.0, description="Agreeableness (0–5)")
+    N: float = Field(..., ge=0.0, le=5.0, description="Neuroticism (0–5)")
 
 
 class ItemAnswers(BaseModel):
