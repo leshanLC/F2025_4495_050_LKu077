@@ -85,16 +85,7 @@ export default function Pathfinder() {
 
       const data = await response.json();
 
-      // Format backend response for display
-      const formattedResults = {
-        careers: data.predictions.map((p) => p.job_category),
-        courses: data.predictions.map((p) =>
-          p.recommended_courses.join(", ")
-        ),
-        tips: "Results are generated based on your inputs and the backend model predictions.",
-      };
-
-      setResults(formattedResults);
+      setResults(data);
     } catch (err) {
       console.error("Error fetching predictions:", err);
       setError("Failed to fetch recommendations. Please check your backend server.");
@@ -342,17 +333,37 @@ export default function Pathfinder() {
                   Your Career Recommendations
                 </h2>
 
-                {results.careers.map((career, index) => (
+                {results.predictions.map((item, index) => (
                   <div
                     key={index}
                     className="bg-white border border-gray-200 rounded-xl p-6 mb-4 hover:shadow-md transition-shadow duration-200"
                   >
                     <h4 className="text-lg font-bold text-blue-700 mb-2">
-                      {career}
+                      {item.job_category}
                     </h4>
                     <p className="text-gray-600">
                       <span className="font-medium">Recommended Courses:</span>{" "}
-                      {}
+                      {item.recommended_courses.length > 0 ? (
+                        <div className="space-y-3">
+                          {item.recommended_courses.map((course, i) => (
+                            <div
+                              key={i}
+                              className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                            >
+                              <a
+                                href={course.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                    {course.course_title}
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">No recommended courses</p>
+                      )}
                     </p>
                   </div>
                 ))}
