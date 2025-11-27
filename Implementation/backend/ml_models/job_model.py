@@ -7,24 +7,17 @@ from sklearn.metrics import accuracy_score, classification_report
 from sklearn.linear_model import LogisticRegression
 from imblearn.over_sampling import RandomOverSampler
 import joblib
+from database.database import PathfinderDatabase
 
 def train_model():
-    # Load datasets
-    #job_postings = pd.read_csv("data/job_postings.csv")
-    job_skills = pd.read_csv("data/job_skills.csv")
+    db = PathfinderDatabase("pathfinder_db.sqlite")
+    db.connect()
 
-    # Merge datasets
-    df = job_skills.copy()
-
-    # Combine textual features
-    df["combined_features"] = (
-        df["Minimum Qualifications"].fillna('') + " " +
-        df["Preferred Qualifications"].fillna('')
-    )
+    df = db.fetch_jobs()
 
     # Text features and labels
-    X_text = df["combined_features"]
-    y = df["Category"]
+    X_text = df["description"]
+    y = df["job_title"]
 
     # TF-IDF vectorization
     tfidf = TfidfVectorizer(
@@ -64,10 +57,10 @@ def train_model():
 
 
     # Save model, TF-IDF, and encoder
-    joblib.dump(model, "saved_model.pkl")
-    joblib.dump(tfidf, "tfidf.pkl")
-    joblib.dump(le, "label_encoder.pkl")
-    print("\n💾 Model, TF-IDF, and LabelEncoder saved successfully!")
+    joblib.dump(model, "./ml_models/saved_model.pkl")
+    joblib.dump(tfidf, "./ml_models/tfidf.pkl")
+    joblib.dump(le, "./ml_models/label_encoder.pkl")
+    print("\nModel, TF-IDF, and LabelEncoder saved successfully!")
 
 if __name__ == "__main__":
     train_model()

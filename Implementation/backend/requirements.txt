@@ -3,3 +3,7 @@ uvicorn
 pandas
 scikit-learn
 joblib
+schedule
+selenium
+webdriver_manager
+imblearn

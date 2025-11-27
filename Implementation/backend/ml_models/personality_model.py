@@ -7,8 +7,8 @@ import numpy as np
 # Load trained model and scaler
 
 try:
-    rf_model = joblib.load("rf_cluster_k5.pkl")     # RandomForest classifier
-    scaler = joblib.load("ocean_scaler.pkl")        # StandardScaler for OCEAN inputs
+    rf_model = joblib.load("./ml_models/rf_cluster_k5.pkl")     # RandomForest classifier
+    scaler = joblib.load("./ml_models/ocean_scaler.pkl")        # StandardScaler for OCEAN inputs
 except Exception as e:
 
     raise RuntimeError(f"Failed to load model or scaler: {e}")
