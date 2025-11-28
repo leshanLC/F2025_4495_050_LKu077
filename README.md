@@ -11,5 +11,11 @@ Hyunhee Kim - 300372531 - kimh134@student.douglascollege.ca
 * Documents - contains all the reports and documentation
 * Implementation - contains all the code related to system
 * Misc
+    * Data Modeling - contains POC related to data modeling
+    * Data Preprocessing - contains POC related to data preprocessing
     * Draft Docs - contains all the draft reports and documentation
+    * Meeting notes - contains meeting notes
+    * POC Fast API - contains POC related to Fast API
+    * POC Web Scraping  - contains POC related to web scraping
     * Research Articles - contains research articles of similar systems
+
